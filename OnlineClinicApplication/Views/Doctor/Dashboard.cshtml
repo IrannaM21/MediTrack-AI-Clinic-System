@@ -1,0 +1,142 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Doctor Dashboard";
+    var groupedAppointments = ViewBag.GroupedAppointments as List<IGrouping<DateTime, OnlineClinicApplication.Models.Appointment>>;
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #e0d4f7, #f3e6ff);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .dashboard-card {
+        max-width: 1000px;
+        margin: 50px auto;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(64, 0, 128, 0.15);
+        background-color: #fff;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(90deg, #6a0dad, #b19cd9);
+        color: #fff;
+        padding: 25px;
+        text-align: center;
+    }
+
+        .dashboard-header h2 {
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+    .calendar {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .calendar-day {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 15px;
+        background-color: #fafafa;
+    }
+
+        .calendar-day h4 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #6a0dad;
+        }
+
+    .appointment {
+        background-color: #ffffff;
+        border-left: 4px solid #6a0dad;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .status-scheduled {
+        border-color: #17a2b8;
+    }
+
+    .status-completed {
+        border-color: #28a745;
+    }
+
+    .status-cancelled {
+        border-color: #dc3545;
+    }
+
+    .appointment p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .btn-appointment {
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        margin-right: 5px;
+    }
+
+    .alert-success {
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="dashboard-card card">
+    <div class="dashboard-header">
+        <h2>Welcome, @ViewBag.DoctorName!</h2>
+        <p>Your Appointments Calendar</p>
+    </div>
+
+    <div class="card-body">
+        @* Success message *@
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success text-center">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (groupedAppointments != null && groupedAppointments.Count > 0)
+        {
+            <div class="calendar">
+                @foreach (var dayGroup in groupedAppointments)
+                {
+                    <div class="calendar-day">
+                        <h4>@dayGroup.Key.ToString("dddd, MMM dd yyyy")</h4>
+                        @foreach (var appt in dayGroup)
+                        {
+                            <div class="appointment status-@appt.Status.ToLower()">
+                                <p><strong>Patient:</strong> @appt.PatientName</p>
+                                <p><strong>Time:</strong> @appt.Time.ToString(@"hh\:mm")</p>
+                                <p><strong>Status:</strong> @appt.Status</p>
+
+                                @* Action buttons for Scheduled appointments only *@
+                                @if (appt.Status == "Scheduled")
+                                {
+                                    <form action="@Url.Action("UpdateAppointmentStatus", "Doctor")" method="post" style="margin-top:5px;">
+                                        <input type="hidden" name="appointmentId" value="@appt.AppointmentId" />
+                                        <button type="submit" name="status" value="Completed" class="btn btn-success btn-sm btn-appointment">Complete</button>
+                                        <button type="submit" name="status" value="Cancelled" class="btn btn-danger btn-sm btn-appointment">Cancel</button>
+                                    </form>
+                                }
+                            </div>
+                        }
+
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted">No appointments scheduled.</div>
+        }
+    </div>
+</div>

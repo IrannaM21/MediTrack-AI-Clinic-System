@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Clinic Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f6f9;
+        overflow-x: hidden;
+    }
+    /* Sidebar */
+    .sidebar {
+        min-height: 100vh;
+        width: 250px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: linear-gradient(180deg, #2C3E50, #34495E);
+        color: #ecf0f1;
+        transition: width 0.3s;
+        overflow: hidden;
+    }
+    .sidebar.collapsed { width: 70px; }
+    .sidebar h3 { padding: 20px 15px; text-align: center; font-weight: bold; }
+    .sidebar a { display: flex; align-items: center; padding: 15px 20px; color: #ecf0f1; text-decoration: none; font-weight: 500; transition: all 0.3s; }
+    .sidebar a i { min-width: 25px; }
+    .sidebar a:hover, .sidebar a.active { background: #2980B9; border-radius: 8px; }
+    .sidebar.collapsed a span { display: none; }
+
+    /* Main content */
+    .main-content { margin-left: 250px; transition: margin-left 0.3s; padding: 20px; }
+    .main-content.collapsed { margin-left: 70px; }
+
+    /* Cards */
+    .card { border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); transition: transform 0.2s; cursor: pointer; }
+    .card:hover { transform: translateY(-5px); }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .toggle-btn { font-size: 1.3rem; cursor: pointer; color: #2C3E50; }
+
+    /* Table */
+    .table thead { background-color: #2980B9; color: #fff; border-radius: 12px; }
+    .badge { font-size: 0.9rem; }
+    .action-btns button { margin-right: 5px; }
+
+    /* Search input */
+    .search-input { max-width: 300px; margin-bottom: 15px; }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    keyframes fadeIn { 0% {opacity:0} 100% {opacity:1} }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <h3>Clinic Admin</h3>
+        <a href="#" class="active"><i class="fa fa-dashboard"></i> <span>Dashboard</span></a>
+        <a href="#"><i class="fa fa-user-injured"></i> <span>Patients</span></a>
+        <a href="#"><i class="fa fa-user-md"></i> <span>Doctors</span></a>
+        <a href="#"><i class="fa fa-calendar-check"></i> <span>Appointments</span></a>
+        <a href="#"><i class="fa fa-file-medical"></i> <span>Reports</span></a>
+        <a href="#"><i class="fa fa-cogs"></i> <span>Settings</span></a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content fade-in" id="mainContent">
+        <div class="header">
+            <i class="fa fa-bars toggle-btn" id="toggleSidebar"></i>
+            <h4>Dashboard</h4>
+            <button class="btn btn-primary"><i class="fa fa-bell me-2"></i> Notifications</button>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="row g-4 mb-4" id="cardsContainer">
+            <div class="col-md-3">
+                <div class="card p-3 card-gradient" style="background: linear-gradient(135deg, #1ABC9C, #16A085);">
+                    <h6>Total Patients</h6>
+                    <h3 id="totalPatients">128</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 card-gradient" style="background: linear-gradient(135deg, #3498DB, #2980B9);">
+                    <h6>Total Doctors</h6>
+                    <h3 id="totalDoctors">12</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 card-gradient" style="background: linear-gradient(135deg, #9B59B6, #8E44AD);">
+                    <h6>Appointments Today</h6>
+                    <h3 id="appointmentsToday">24</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 card-gradient" style="background: linear-gradient(135deg, #E67E22, #D35400);">
+                    <h6>Pending Reports</h6>
+                    <h3 id="pendingReports">8</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Table -->
+        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by patient name..." onkeyup="searchTable()">
+        <div class="card p-3 mb-4">
+            <h5>Recent Appointments</h5>
+            <table class="table mt-3" id="appointmentsTable">
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="appointmentsBody">
+                    <tr>
+                        <td>John Doe</td>
+                        <td>Dr. Smith</td>
+                        <td>12-Oct-2025</td>
+                        <td>10:00 AM</td>
+                        <td><span class="badge bg-success">Completed</span></td>
+                        <td class="action-btns">
+                            <button class="btn btn-sm btn-warning" onclick="updateStatus(this,'Pending')">Pending</button>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus(this,'Completed')">Complete</button>
+                            <button class="btn btn-sm btn-danger" onclick="updateStatus(this,'Cancelled')">Cancel</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Mary Jane</td>
+                        <td>Dr. Brown</td>
+                        <td>12-Oct-2025</td>
+                        <td>11:00 AM</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                        <td class="action-btns">
+                            <button class="btn btn-sm btn-warning" onclick="updateStatus(this,'Pending')">Pending</button>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus(this,'Completed')">Complete</button>
+                            <button class="btn btn-sm btn-danger" onclick="updateStatus(this,'Cancelled')">Cancel</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Charts -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h5>Appointments Overview</h5>
+                    <canvas id="appointmentsChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h5>Patients by Department</h5>
+                    <canvas id="patientsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sidebar toggle
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('collapsed');
+        });
+
+        // Search table
+        function searchTable() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const table = document.getElementById("appointmentsTable");
+            const rows = table.getElementsByTagName("tr");
+            for (let i = 1; i < rows.length; i++) {
+                const patient = rows[i].cells[0].innerText.toLowerCase();
+                rows[i].style.display = patient.includes(input) ? "" : "none";
+            }
+        }
+
+        // Update appointment status
+        function updateStatus(btn, status) {
+            const row = btn.closest("tr");
+            const badge = row.cells[4].getElementsByTagName("span")[0];
+            badge.innerText = status;
+            badge.className = "badge bg-" + (status === 'Completed' ? 'success' : status === 'Pending' ? 'warning' : 'danger');
+        }
+
+        // Charts
+        const ctx1 = document.getElementById('appointmentsChart').getContext('2d');
+        new Chart(ctx1, { type: 'bar', data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], datasets: [{ label: 'Appointments', data: [12, 19, 10, 15, 22, 13, 17], backgroundColor: '#3498DB' }] } });
+
+        const ctx2 = document.getElementById('patientsChart').getContext('2d');
+        new Chart(ctx2, { type: 'pie', data: { labels: ['Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Others'], datasets: [{ label: 'Patients', data: [20, 15, 25, 18, 10], backgroundColor: ['#1ABC9C', '#3498DB', '#E74C3C', '#F1C40F', '#9B59B6'] }] } });
+
+        // Example: Dynamic card updates (simulate real-time)
+        setInterval(() => {
+            document.getElementById('appointmentsToday').innerText = Math.floor(Math.random() * 30) + 1;
+            document.getElementById('totalPatients').innerText = 120 + Math.floor(Math.random() * 20);
+        }, 5000);
+    </script>
+</body>
+</html>

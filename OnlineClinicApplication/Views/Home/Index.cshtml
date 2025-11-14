@@ -1,0 +1,129 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartClinic</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/Content/site.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="@Url.Action("Index","Home")">SmartClinic</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="@Url.Action("Index","Home")">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Login","Patient")">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="@Url.Action("Register","Patient")">Register</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container d-flex flex-column flex-lg-row align-items-center justify-content-between">
+            <div>
+                <h1 class="display-4 fw-bold">Welcome to <span class="text-warning">SmartClinic</span></h1>
+                <p class="lead mt-3">AI-powered healthcare platform — connect with the right doctor instantly!</p>
+                <a href="#analyzer" class="btn btn-warning btn-lg mt-3">Analyze Symptoms</a>
+            </div>
+            <img src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" class="img-fluid hero-img" alt="Clinic" style="max-width:300px;">
+        </div>
+    </section>
+
+    <!-- Symptom Analyzer -->
+    <section id="analyzer" class="py-5">
+        <div class="container">
+            <div class="card shadow-sm p-4">
+                <h2 class="fw-bold text-primary text-center mb-3">🤖 AI Symptom Analyzer</h2>
+                <p class="text-center">Describe your symptoms, and we'll suggest the right specialist.</p>
+                <textarea id="symptomText" class="form-control mb-3" rows="4" placeholder="Type your symptoms here..."></textarea>
+                <div class="d-grid">
+                    <button id="analyzeBtn" class="btn btn-primary btn-lg">Analyze Symptoms</button>
+                </div>
+                <div id="resultBox" class="mt-4 p-3 border-start border-5 border-primary rounded bg-light d-none">
+                    <h5>Prediction Result</h5>
+                    <p><strong>Specialty:</strong> <span id="specOutput"></span></p>
+                    <p><strong>Urgency:</strong> <span id="urgencyOutput"></span></p>
+                    <canvas id="scoreChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section class="py-5 bg-light text-center">
+        <div class="container">
+            <h2 class="fw-bold text-primary">📅 Book Your Appointment</h2>
+            <p class="mb-3">Login as a patient to schedule your appointment with ease.</p>
+            <a href="@Url.Action("Login","Patient")" class="btn btn-primary btn-lg">Login to Book</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-3 bg-white text-center border-top">
+        <p class="mb-0">© 2025 SmartClinic | Empowering Smart Healthcare</p>
+    </footer>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .hero-img {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById('analyzeBtn').addEventListener('click', async () => {
+            const text = document.getElementById('symptomText').value;
+            if (!text.trim()) { alert('Please describe your symptoms.'); return; }
+
+            try {
+                const res = await fetch('@Url.Action("Predict","Api")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'text=' + encodeURIComponent(text)
+                });
+
+                const data = await res.json();
+
+                const resultBox = document.getElementById('resultBox');
+                resultBox.classList.remove('d-none');
+                document.getElementById('specOutput').innerText = data.specialty;
+                document.getElementById('urgencyOutput').innerText = data.urgency;
+
+                const ctx = document.getElementById('scoreChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.scores),
+                        datasets: [{
+                            label: 'Specialty Scores',
+                            data: Object.values(data.scores),
+                            backgroundColor: '#0d6efd'
+                        }]
+                    },
+                    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                });
+            } catch (err) {
+                alert('Error analyzing symptoms. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

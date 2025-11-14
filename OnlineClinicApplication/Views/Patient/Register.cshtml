@@ -1,0 +1,179 @@
+﻿@model OnlineClinicApplication.Models.Patient
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Patient Registration";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #cce0ff, #99ccff);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .register-card {
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 102, 204, 0.15);
+        overflow: hidden;
+    }
+
+    .register-header {
+        background: linear-gradient(90deg, #0066cc, #3399ff);
+        color: #fff;
+        padding: 25px 15px;
+        text-align: center;
+    }
+
+        .register-header h2 {
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+    .register-card .form-control {
+        background-color: #ffffff;
+        color: #3e3e3e;
+    }
+
+        .register-card .form-control:focus {
+            border-color: #0066cc;
+            box-shadow: 0 0 8px rgba(0,102,204,0.5);
+        }
+
+    .form-control::placeholder {
+        color: #0073e6;
+    }
+
+    .btn-register {
+        background-color: #0066cc;
+        border: none;
+        font-weight: 600;
+        color: white;
+        transition: 0.3s;
+    }
+
+        .btn-register:hover {
+            background-color: #0052a3;
+        }
+
+    .form-label {
+        font-weight: 500;
+        color: #3e3e3e;
+    }
+
+    .card-body {
+        background-color: #ffffff;
+        padding: 30px;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card register-card">
+                <div class="register-header">
+                    <h2><i class="bi bi-person-circle"></i> Patient Registration</h2>
+                    <p>Create your account securely</p>
+                </div>
+
+                <div class="card-body">
+                    @if (ViewBag.ErrorMessage != null)
+                    {
+                        <div class="alert alert-danger text-center">@ViewBag.ErrorMessage</div>
+                    }
+
+                    @*@Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })*@
+
+                    @using (Html.BeginForm("Register", "Patient", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.Name, htmlAttributes: new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Full Name" })
+                                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.Gender, htmlAttributes: new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.Gender, new List<SelectListItem> {
+                                    new SelectListItem { Text="Select Gender", Value="", Selected=true },
+                                    new SelectListItem { Text="Male", Value="Male" },
+                                    new SelectListItem { Text="Female", Value="Female" },
+                                    new SelectListItem { Text="Other", Value="Other" }
+                                }, new { @class = "form-select" })
+                                @Html.ValidationMessageFor(m => m.Gender, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.Age, htmlAttributes: new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Age, new { @class = "form-control", placeholder = "Age", type = "number", min = "1", max = "120" })
+                                @Html.ValidationMessageFor(m => m.Age, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.BloodGroup, htmlAttributes: new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.BloodGroup, new List<SelectListItem> {
+                                    new SelectListItem { Text="Select Blood Group", Value="", Selected=true },
+                                    new SelectListItem { Text="A+", Value="A+" },
+                                    new SelectListItem { Text="A-", Value="A-" },
+                                    new SelectListItem { Text="B+", Value="B+" },
+                                    new SelectListItem { Text="B-", Value="B-" },
+                                    new SelectListItem { Text="O+", Value="O+" },
+                                    new SelectListItem { Text="O-", Value="O-" },
+                                    new SelectListItem { Text="AB+", Value="AB+" },
+                                    new SelectListItem { Text="AB-", Value="AB-" }
+                                }, new { @class = "form-select" })
+                                @Html.ValidationMessageFor(m => m.BloodGroup, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.Email, htmlAttributes: new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email", type = "email", pattern = @"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$", title = "Enter valid email" })
+                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.Phone, htmlAttributes: new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", placeholder = "Phone Number", pattern = @"^\d{10}$", title = "Enter 10-digit phone number" })
+                                @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.Password, htmlAttributes: new { @class = "form-label" })
+                                @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Password", pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$", title = "At least 8 chars, uppercase, lowercase, number, and special char" })
+                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="mb-3 col-md-6">
+                                @Html.LabelFor(m => m.ConfirmPassword, htmlAttributes: new { @class = "form-label" })
+                                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Confirm Password" })
+                                @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            @Html.LabelFor(m => m.Address, htmlAttributes: new { @class = "form-label" })
+                            @Html.TextAreaFor(m => m.Address, new { @class = "form-control", rows = "3", placeholder = "Full Address" })
+                            @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                        </div>
+
+                        <button type="submit" class="btn btn-register w-100 rounded-3">Register</button>
+
+                        <p class="text-center mt-3 text-muted">
+                            Already have an account? <a href="@Url.Action("Login","Patient")">Login here</a>
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
